@@ -67,8 +67,8 @@ const showDeposit = (ctx) => {
     ctx.reply(
         `💳 የአካውንት መሙያ ዝርዝር (Payment Details):\n\n` +
         `• የሂሳብ አይነት፦ ቴሌብር (Telebirr) ወይም CBE\n` +
-        `• የሂሳብ ቁጥር፦ 0988526913\n` +
-        `• የባለቤቱ ስም፦ Mathias\n` +
+        `• የሂሳብ ቁጥር፦ 0923082717\n` +
+        `• የባለቤቱ ስም፦ Mathias Tesema\n` +
         `• ዝቅተኛ መጠን፦ 100 ETB\n\n` +
         `⚠️ መመሪያ፦ ብሩን ካስተላለፉ በኋላ ከባንክ ወይም ከቴሌብር የመጣሎትን አጭር የጽሑፍ መልዕክት (SMS) ሙሉ በሙሉ ኮፒ (Copy) አድርገው እዚህ ቦት ላይ ይላኩት።`
     );
@@ -138,6 +138,12 @@ bot.on('text', (ctx) => {
     } else {
         ctx.reply(`የላኩትን መልዕክት አልተረዳሁትም። እባክዎ ከታች ያለውን ሜኑ ይጠቀሙ ወይም /start ይበሉ።`);
     }
+});
+
+// 🌐 Render በሰላም እንዲያነበው የፖርት (Port) ማስተካከያ እዚህ ተጨምሯል
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`ሰርቨሩ በፖርት ${PORT} ላይ እየሰራ ነው...`);
 });
 
 bot.launch();
