@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hule Bingo</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #a29bfe; display: flex; flex-direction: column; align-items: center; padding: 15px; min-height: 100vh; }
+        .info-container { display: flex; justify-content: space-around; width: 100%; max-width: 450px; margin-bottom: 15px; }
+        .info-box { background-color: #fff; padding: 8px 15px; border-radius: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex: 1; margin: 0 5px; }
+        .info-box span { display: block; font-size: 12px; color: #666; font-weight: bold; }
+        .info-box .value { font-size: 16px; color: #2d3436; font-weight: 900; }
+        .bingo-board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; width: 100%; max-width: 450px; background-color: #ffeaa7; padding: 10px; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+        .cell { background-color: #dfe6e9; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border-radius: 8px; color: #2d3436; }
+        .cell.selected { background-color: #ff7675; color: white; transform: scale(1.05); }
+        .btn-container { display: flex; justify-content: center; gap: 15px; margin-top: 20px; width: 100%; max-width: 450px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 25px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-refresh { background-color: #0984e3; }
+        .btn-start { background-color: #e17055; }
+        .lucky-number-display { margin-top: 15px; font-size: 18px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 10px; min-height: 32px; }
+    </style>
+</head>
+<body>
+    <div class="info-container">
+        <div class="info-box"><span>Wallet</span><div class="value" id="wallet-val">100.00 ETB</div></div>
+        <div class="info-box"><span>Active Game</span><div class="value" id="active-game-val">0</div></div>
+        <div class="info-box"><span>Stake</span><div class="value" id="stake-val">20 ETB</div></div>
+    </div>
+    <div class="bingo-board" id="bingo-board"></div>
+    <div class="lucky-number-display" id="lucky-display">ቁጥር ለመምረጥ Start ይጫኑ</div>
+    <div class="btn-container">
+        <button class="btn btn-refresh" onclick="resetGame()">Refresh</button>
+        <button class="btn btn-start" onclick="startGame()">Start game</button>
+    </div>
+    <script>
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if(tg) { tg.expand(); }
+        const board = document.getElementById('bingo-board');
+        const luckyDisplay = document.getElementById('lucky-display');
+        const walletVal = document.getElementById('wallet-val');
+        let wallet = 100; let stake = 20; let selectedNumbers = new Set();
+        function createBoard() {
+            board.innerHTML = '';
+            for (let i = 1; i <= 100; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell'); cell.innerText = i; cell.id = `cell-${i}`; board.appendChild(cell);
+            }
+        }
+        function startGame() {
+            if (wallet < stake) { alert("በቂ የገንዘብ መጠን የሎትም!"); return; }
+            wallet -= stake; walletVal.innerText = wallet.toFixed(2) + " ETB";
+            document.getElementById('active-game-val').innerText = "1";
+            selectedNumbers.clear(); createBoard();
+            let count = 0;
+            const interval = setInterval(() => {
+                let randomNumber;
+                do { randomNumber = Math.floor(Math.random() * 100) + 1; } while (selectedNumbers.has(randomNumber));
+                selectedNumbers.add(randomNumber);
+                const cell = document.getElementById(`cell-${randomNumber}`);
+                if (cell) cell.classList.add('selected');
+                luckyDisplay.innerText = `የወጣው ቁጥር፡ ${randomNumber}`;
+                count++;
+                if (count >= 10) {
+                    clearInterval(interval); luckyDisplay.innerText = "ጨዋታው ተጠናቋል!";
+                    document.getElementById('active-game-val').innerText = "0"; checkWin();
+                }
+            }, 800);
+        }
+        function checkWin() {
+            let resultData = {};
+            if (Math.random() > 0.5) {
+                wallet += 50; resultData = { status: "win", amount: 50, newBalance: wallet };
+                alert("🎉 እንኳን ደስ አለዎት! አሸንፈዋል። 50 ETB ተጨምሯል።");
+            } else {
+                resultData = { status: "lose", amount: stake, newBalance: wallet };
+                alert("😢 በዚህ ዙር አልታደሉም። እንደገና ይሞክሩ!");
+            }
+            if (tg) { tg.sendData(JSON.stringify(resultData)); }
+        }
+        function resetGame() { createBoard(); luckyDisplay.innerText = "ቁጥር ለመምረጥ Start ይጫኑ"; document.getElementById('active-game-val').innerText = "0"; }
+        createBoard();
+    </script>
+</body>
+</html>
